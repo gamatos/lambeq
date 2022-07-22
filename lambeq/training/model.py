@@ -24,8 +24,11 @@ from abc import ABC, abstractmethod
 from os import PathLike
 from typing import Any, Protocol, Union
 
+import numpy as np
+
 from discopy.tensor import Diagram
 from sympy import default_sort_key
+from lambeq.core.utils import flatten
 
 
 class SizedIterable(Protocol):
@@ -121,3 +124,13 @@ class Model(ABC):
             {sym for circ in diagrams for sym in circ.free_symbols},
             key=default_sort_key)
         return model
+
+    def _relevant_parameter_mask(self, diagrams: list[Diagram]):
+        diags_gen = flatten(diagrams)
+        relevant_params = set.union(*[diag.free_symbols for diag in diags_gen])
+        # the symbolic parameters
+        parameters = self.symbols
+        # the perturbations
+        mask = [0 if sym in relevant_params else 1 for sym in parameters]
+        return np.array(mask)
+

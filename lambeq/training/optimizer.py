@@ -52,7 +52,7 @@ class Optimizer(ABC):
         self.model = model
         self.loss_fn = loss_fn
         self.bounds = bounds
-        self.gradient = np.zeros(len(model.weights))
+        self.gradient = np.zeros(model.weights.shape)
 
     @abstractmethod
     def backward(self,

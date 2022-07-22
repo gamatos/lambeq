@@ -109,15 +109,11 @@ class SPSAOptimizer(Optimizer):
             The model predictions and the calculated loss.
 
         """
-        diagrams, targets = batch
-        diags_gen = flatten(diagrams)
-        relevant_params = set.union(*[diag.free_symbols for diag in diags_gen])
-        # the symbolic parameters
-        parameters = self.model.symbols
+        diagrams, targets = batch    
+        mask = self.model._relevant_parameter_mask(diagrams)
         x = self.model.weights
         # the perturbations
-        delta = np.random.choice([-1, 1], size=len(x))
-        mask = [0 if sym in relevant_params else 1 for sym in parameters]
+        delta = np.random.choice([-1, 1], size=x.shape)
         delta = np.ma.masked_array(delta, mask=mask)
         # calculate gradient
         xplus = self.project(x + self.ck * delta)

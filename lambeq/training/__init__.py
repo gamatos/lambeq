@@ -14,7 +14,8 @@
 
 __all__ = ['Checkpoint', 'Dataset', 'Model',  'NumpyModel', 'Optimizer',
            'PytorchModel', 'PytorchTrainer', 'QuantumTrainer',
-           'QuantumModel', 'SPSAOptimizer', 'TketModel', 'Trainer']
+           'QuantumModel', 'SPSAOptimizer', 'TketModel', 'Trainer',
+           'StairsModel']
 
 from lambeq.training.checkpoint import Checkpoint
 
@@ -28,6 +29,7 @@ from lambeq.training.model import Model
 from lambeq.training.numpy_model import NumpyModel
 from lambeq.training.pytorch_model import PytorchModel
 from lambeq.training.quantum_model import QuantumModel
+from lambeq.training.stairs_model import StairsModel
 from lambeq.training.tket_model import TketModel
 
 from lambeq.training.optimizer import Optimizer

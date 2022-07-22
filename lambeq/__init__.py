@@ -88,6 +88,7 @@ __all__ = [
         'PytorchModel',
         'QuantumModel',
         'TketModel',
+        'StairsModel',
 
         'Trainer',
         'PytorchTrainer',
@@ -122,4 +123,4 @@ from lambeq.tokeniser import Tokeniser, SpacyTokeniser
 from lambeq.training import (Checkpoint, Dataset, Optimizer, SPSAOptimizer,
                              Model, NumpyModel, PytorchModel, QuantumModel,
                              TketModel, Trainer, PytorchTrainer,
-                             QuantumTrainer)
+                             QuantumTrainer, StairsModel)
