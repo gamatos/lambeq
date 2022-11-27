@@ -27,7 +27,6 @@ from typing import Any, Optional
 import numpy as np
 from numpy.typing import ArrayLike
 
-from lambeq.core.utils import flatten
 from lambeq.training.optimizer import Optimizer
 from lambeq.training.quantum_model import QuantumModel
 
@@ -39,8 +38,6 @@ class SPSAOptimizer(Optimizer):
     See https://ieeexplore.ieee.org/document/705889 for details.
 
     """
-
-    model : QuantumModel
 
     def __init__(self, model: QuantumModel,
                  hyperparams: dict[str, float],
@@ -102,7 +99,7 @@ class SPSAOptimizer(Optimizer):
 
     def backward(
             self,
-            batch: tuple[Iterable, np.ndarray]) -> float:
+            batch: tuple[Iterable, np.ndarray]) -> tuple[np.ndarray, float]:
         """Calculate the gradients of the loss function.
 
         The gradients are calculated with respect to the model
@@ -120,15 +117,11 @@ class SPSAOptimizer(Optimizer):
             The model predictions and the calculated loss.
 
         """
-        diagrams, targets = batch
-        diags_gen = flatten(diagrams)
-        relevant_params = set.union(*[diag.free_symbols for diag in diags_gen])
-        # the symbolic parameters
-        parameters = self.model.symbols
+        diagrams, targets = batch    
+        mask = self.model._relevant_parameter_mask(diagrams)
         x = self.model.weights
         # the perturbations
-        delta = np.random.choice([-1, 1], size=len(x))
-        mask = [0 if sym in relevant_params else 1 for sym in parameters]
+        delta = np.random.choice([-1, 1], size=x.shape)
         delta = np.ma.masked_array(delta, mask=mask)
         # calculate gradient
         xplus = self.project(x + self.ck * delta)
@@ -140,14 +133,15 @@ class SPSAOptimizer(Optimizer):
         y1 = self.model(diagrams)
         loss1 = self.loss_fn(y1, targets)
         if self.bounds is None:
-            grad = (loss0 - loss1) / (2 * self.ck * delta)
+            grad = (loss0 - loss1) / (2*self.ck*delta)
         else:
-            grad = (loss0 - loss1) / (xplus - xminus)
+            grad = (loss0 - loss1) / (xplus-xminus)
         self.gradient += np.ma.filled(grad, fill_value=0)
         # restore parameter value
         self.model.weights = x
-        loss = (loss0 + loss1) / 2
-        return loss
+        loss = (loss0+loss1)/2
+        pred = (y0 + y1)/2
+        return pred, loss
 
     def step(self) -> None:
         """Perform optimisation step."""

@@ -46,7 +46,8 @@ class Dataset:
                  data: list[Any],
                  targets: list[Any],
                  batch_size: int = 0,
-                 shuffle: bool = True) -> None:
+                 shuffle: bool = True,
+                 backend = None) -> None:
         """Initialise a Dataset for lambeq training.
 
         Parameters
@@ -66,6 +67,11 @@ class Dataset:
             When 'data' and 'targets' do not match in size.
 
         """
+        if backend is None:
+            self.backend = Tensor.get_backend()
+        else:
+            self.backend = backend
+
         if len(data) != len(targets):
             raise ValueError('Lengths of `data` and `targets` differ.')
         self.data = data
@@ -82,7 +88,7 @@ class Dataset:
         """Get a single item or a subset from the dataset."""
         x = self.data[index]
         y = self.targets[index]
-        return x, Tensor.get_backend().array(y)
+        return x, self.backend.array(y)
 
     def __len__(self) -> int:
         return len(self.data)
@@ -102,7 +108,7 @@ class Dataset:
         if self.shuffle:
             new_data, new_targets = self.shuffle_data(new_data, new_targets)
 
-        backend = Tensor.get_backend()
+        backend = self.backend
         for start_idx in range(0, len(self.data), self.batch_size):
             yield (new_data[start_idx: start_idx+self.batch_size],
                    backend.array(

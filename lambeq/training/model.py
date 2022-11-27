@@ -25,8 +25,10 @@ import os
 from typing import Any, Protocol, Union
 
 from discopy.tensor import Diagram
+import numpy as np
 from sympy import default_sort_key
 
+from lambeq.core.utils import flatten
 from lambeq.training.checkpoint import Checkpoint
 
 _StrPathT = Union[str, 'os.PathLike[str]']
@@ -147,3 +149,12 @@ class Model(ABC):
             {sym for circ in diagrams for sym in circ.free_symbols},
             key=default_sort_key)
         return model
+
+    def _relevant_parameter_mask(self, diagrams: list[Diagram]):
+        diags_gen = flatten(diagrams)
+        relevant_params = set.union(*[diag.free_symbols for diag in diags_gen])
+        # the symbolic parameters
+        parameters = self.symbols
+        # the perturbations
+        mask = [0 if sym in relevant_params else 1 for sym in parameters]
+        return np.array(mask)

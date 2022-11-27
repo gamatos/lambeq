@@ -53,11 +53,11 @@ class Optimizer(ABC):
         self.model = model
         self.loss_fn = loss_fn
         self.bounds = bounds
-        self.gradient = np.zeros(len(model.weights))
+        self.gradient = np.zeros(model.weights.shape)
 
     @abstractmethod
     def backward(self,
-                 batch: tuple[list, np.ndarray]) -> float:
+                 batch: tuple[list, np.ndarray]) -> tuple[np.ndarray, float]:
         """Calculate the gradients of the loss function.
 
         The gradient is calculated with respect to the model parameters.
